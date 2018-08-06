@@ -1,11 +1,12 @@
 {
-  "name": "sample-router",
+  "name": "routerofsample",
   "version": "1.0.0",
   "description": "a sample router of javascript",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "rollup -c"
+    "dev": "rollup -c",
+    "publish": " publish"
   },
   "repository": {
     "type": "git",
