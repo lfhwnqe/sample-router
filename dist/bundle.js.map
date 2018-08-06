@@ -1,0 +1,1 @@
+{"version":3,"file":"bundle.js","sources":["../src/routes/router.js","../src/main.js"],"sourcesContent":["export default 'hello world'","// import { version } from '../package.json';  // rollup插件可以导出json\n\nimport hello from './routes/router';\nexport default function () {\n    console.log(hello);\n}"],"names":["log","hello"],"mappings":"aAAA,UAAe,cCGA,wBACHA,IAAIC"}
