@@ -1,0 +1,1 @@
+var router = new Router({ pathArr: ['/', '/hello'] });
