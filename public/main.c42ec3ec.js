@@ -108,30 +108,34 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+defaultRedirect = {
+  redirect: '/404',
+  name: '404',
+  template: '<div>404 not found</div>',
+  render: function render() {
+    console.log('404 NOT FOUND');
+  }
+};
+
 var Router = function () {
-  function Router(opt) {
+  function Router(routerArr) {
     _classCallCheck(this, Router);
 
-    var pathArr = opt.pathArr,
-        redirect = opt.redirect;
-
-    this.redirect = redirect;
-    this.pathArr = pathArr;
+    this.routerArr = routerArr;
+    this.pathArr = routerArr.map(function (k) {
+      return k.path;
+    });
+    this.redirect = routerArr.filter(function (k) {
+      return k.redirect;
+    });
     this.hashHistory = [];
     this.init();
   }
 
   _createClass(Router, [{
-    key: 'setOpts',
-    value: function setOpts() {
-      if (!this.redirect) {
-        this.redirect = '/404';
-      }
-    }
-  }, {
     key: 'init',
     value: function init() {
-      this.setOpts();
+      // todo 初始化没有判断hash的问题
       this.bindEvent();
     }
   }, {
@@ -141,14 +145,24 @@ var Router = function () {
 
       window.addEventListener('hashchange', function (e) {
         var url = spliceHash(e.newURL);
-        if (!hasIndex(_this.pathArr, url)) {
-          if (_this.redirect) {
-            _this.push(_this.redirect);
-          } else {
-            console.log('has no such path');
+        var currentRoute = void 0,
+            element = void 0;
+        if (hasIndex(_this.pathArr, url)) {
+          currentRoute = _this.routerArr[_this.pathArr.indexOf(url)];
+        } else {
+          // 重定向到默认
+          currentRoute = _this.redirect[0];
+          if (!currentRoute) {
+            currentRoute = defaultRedirect;
           }
+          // todo 两次触发404 render的问题
+          window.location.hash = currentRoute.redirect;
         }
-        _this.hashHistory.push(url);
+        element = currentRoute.template;
+        // 渲染dom
+        document.querySelector('body').innerHTML = element;
+        // 触发render钩子
+        if (currentRoute.render) currentRoute.render();
       });
     }
 
@@ -172,7 +186,6 @@ var Router = function () {
 function spliceHash(url) {
   var hashIndex = url.indexOf('#');
   var str = url.substr(hashIndex + 1);
-  console.log('str==>>', str);
   return str;
 }
 
@@ -191,8 +204,26 @@ var _router2 = _interopRequireDefault(_router);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var router = new _router2.default({ pathArr: ['/', '/hello'] });
-},{"./routes/router":"src/routes/router.js"}],"node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+var routerArr = [{
+  path: '/',
+  name: 'index',
+  title: '主页',
+  template: '<div>\u4E3B\u9875</div>',
+  render: function render() {
+    console.log('render index');
+  }
+}, {
+  path: '/list',
+  name: 'list',
+  title: '列表',
+  template: '<div>\u5217\u8868\u9875</div>',
+  render: function render() {
+    console.log('render list');
+  }
+}];
+
+var router = new _router2.default(routerArr);
+},{"./routes/router":"src/routes/router.js"}],"../../.nvm/versions/node/v10.0.0/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 
@@ -221,7 +252,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = '' || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + '55384' + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + '54059' + '/');
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 
@@ -362,5 +393,5 @@ function hmrAccept(bundle, id) {
     return hmrAccept(global.parcelRequire, id);
   });
 }
-},{}]},{},["node_modules/parcel-bundler/src/builtins/hmr-runtime.js","src/main.js"], null)
+},{}]},{},["../../.nvm/versions/node/v10.0.0/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js","src/main.js"], null)
 //# sourceMappingURL=/main.c42ec3ec.map
