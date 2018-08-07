@@ -1,3 +1,3 @@
 import Router from './routes/router';
 
-export default Router;
+var router = new Router({ pathArr: ['/', '/hello'] });

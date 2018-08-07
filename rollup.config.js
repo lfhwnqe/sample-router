@@ -6,7 +6,7 @@ import babel from 'rollup-plugin-babel';
 
 
 export default {
-    input: 'src/main.js',
+    input: 'src/routes/router.js',
     output: {
         file: './dist/bundle.js',
         format: 'cjs',
