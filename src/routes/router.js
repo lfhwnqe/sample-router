@@ -2,7 +2,7 @@ defaultRedirect = {
   redirect: '/404',
   name: '404',
   template: `<div>404 not found</div>`,
-  render:()=>{console.log('404 NOT FOUND')}
+  render: () => {console.log('404 NOT FOUND');}
 };
 
 class Router {
@@ -15,30 +15,52 @@ class Router {
   }
 
   init() {
-    // todo 初始化没有判断hash的问题
+    const url = spliceHash(location.href);
+    this.hashFn(url);
     this.bindEvent();
+  }
+
+  hashFn(url) {
+    let currentRoute, element;
+    if (hasIndex(this.pathArr, url)) {
+      currentRoute = this.routerArr[(this.pathArr.indexOf(url))];
+    } else {
+      // 重定向到默认
+      currentRoute = this.redirect[0];
+      if (!currentRoute) {
+        currentRoute = defaultRedirect;
+      }
+      // todo 两次触发404 render的问题
+      window.location.hash = currentRoute.redirect;
+    }
+    element = currentRoute.template;
+    // 渲染dom
+    document.querySelector('body').innerHTML = element;
+    // 触发render钩子
+    if (currentRoute.render) currentRoute.render();
   }
 
   bindEvent() {
     window.addEventListener('hashchange', (e) => {
       const url = spliceHash(e.newURL);
-      let currentRoute, element;
-      if (hasIndex(this.pathArr, url)) {
-        currentRoute = this.routerArr[(this.pathArr.indexOf(url))];
-      } else {
-        // 重定向到默认
-        currentRoute = this.redirect[0];
-        if (!currentRoute) {
-          currentRoute = defaultRedirect;
-        }
-        // todo 两次触发404 render的问题
-        window.location.hash = currentRoute.redirect;
-      }
-      element = currentRoute.template;
-      // 渲染dom
-      document.querySelector('body').innerHTML = element;
-      // 触发render钩子
-      if (currentRoute.render) currentRoute.render();
+      this.hashFn(url);
+      // let currentRoute, element;
+      // if (hasIndex(this.pathArr, url)) {
+      //   currentRoute = this.routerArr[(this.pathArr.indexOf(url))];
+      // } else {
+      //   // 重定向到默认
+      //   currentRoute = this.redirect[0];
+      //   if (!currentRoute) {
+      //     currentRoute = defaultRedirect;
+      //   }
+      //   // todo 两次触发404 render的问题
+      //   window.location.hash = currentRoute.redirect;
+      // }
+      // element = currentRoute.template;
+      // // 渲染dom
+      // document.querySelector('body').innerHTML = element;
+      // // 触发render钩子
+      // if (currentRoute.render) currentRoute.render();
 
     });
   }
