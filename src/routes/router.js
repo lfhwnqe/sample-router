@@ -5,63 +5,50 @@ defaultRedirect = {
   render: () => {console.log('404 NOT FOUND');}
 };
 
+// todo 不支持子路由、无法异步请求数据渲染模版
 class Router {
   constructor(routerArr) {
+    this.url = spliceHash(location.href);
     this.routerArr = routerArr;
     this.pathArr = routerArr.map(k => k.path);
-    this.redirect = routerArr.filter(k => (k.redirect));
+    this.redirect = routerArr.filter(k => (k.redirect)).length > 0 ? routerArr.filter(k => (k.redirect)) : [defaultRedirect];
     this.hashHistory = [];
     this.init();
   }
 
   init() {
-    const url = spliceHash(location.href);
-    this.hashFn(url);
+    this.hashFn(this.url);
     this.bindEvent();
   }
 
   hashFn(url) {
     let currentRoute, element;
+    if (!hasIndex(this.pathArr, url) && !(this.redirect[0].redirect === url)) {
+      window.location.hash = this.redirect[0].redirect;
+      return;
+    }
     if (hasIndex(this.pathArr, url)) {
       currentRoute = this.routerArr[(this.pathArr.indexOf(url))];
+      element = currentRoute.template;
     } else {
-      // 重定向到默认
       currentRoute = this.redirect[0];
-      if (!currentRoute) {
-        currentRoute = defaultRedirect;
-      }
-      // todo 两次触发404 render的问题
-      window.location.hash = currentRoute.redirect;
+      element = currentRoute.template;
     }
-    element = currentRoute.template;
-    // 渲染dom
+    currentRoute.render && currentRoute.render();
+    if (element) {
+      this.render(element);
+    }
+
+  }
+
+  render(element) {
     document.querySelector('body').innerHTML = element;
-    // 触发render钩子
-    if (currentRoute.render) currentRoute.render();
   }
 
   bindEvent() {
     window.addEventListener('hashchange', (e) => {
       const url = spliceHash(e.newURL);
       this.hashFn(url);
-      // let currentRoute, element;
-      // if (hasIndex(this.pathArr, url)) {
-      //   currentRoute = this.routerArr[(this.pathArr.indexOf(url))];
-      // } else {
-      //   // 重定向到默认
-      //   currentRoute = this.redirect[0];
-      //   if (!currentRoute) {
-      //     currentRoute = defaultRedirect;
-      //   }
-      //   // todo 两次触发404 render的问题
-      //   window.location.hash = currentRoute.redirect;
-      // }
-      // element = currentRoute.template;
-      // // 渲染dom
-      // document.querySelector('body').innerHTML = element;
-      // // 触发render钩子
-      // if (currentRoute.render) currentRoute.render();
-
     });
   }
 
@@ -77,8 +64,13 @@ class Router {
 
 
 function spliceHash(url) {
+  let str;
   const hashIndex = url.indexOf('#');
-  const str = url.substr(hashIndex + 1);
+  if (hashIndex >= 0) {
+    str = url.substr(hashIndex + 1);
+  } else {
+    str = '/';
+  }
   return str;
 }
 
