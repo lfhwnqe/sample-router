@@ -5,7 +5,10 @@ defaultRedirect = {
   render: () => {console.log('404 NOT FOUND');}
 };
 
-// TODO 实现异步请求数据渲染模版，渲染方法的设计及与外部传入配置component的结合
+// 实现异步请求数据渲染模版，渲染方法的设计及与外部传入配置component的结合
+// 路由渲染采用暴露接口给外部的方式，在bind钩子的回调内进行异步
+// TODO 确定路由的页面缓存，避免每次重新请求数据渲染
+// TODO router的跳转和回退方法重写
 // TODO 实现beforeEnter afterEnter beforeLeave afterLeave钩子
 // TODO 实现局部路由
 class Router {
