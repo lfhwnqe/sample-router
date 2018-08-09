@@ -7,6 +7,7 @@ defaultRedirect = {
 
 // TODO 实现异步请求数据渲染模版，渲染方法的设计及与外部传入配置component的结合
 // TODO 实现beforeEnter afterEnter beforeLeave afterLeave钩子
+// TODO 实现局部路由
 class Router {
   constructor(routerArr) {
     this.url = spliceHash(location.href);
@@ -24,6 +25,7 @@ class Router {
 
   hashFn(url) {
     let currentRoute, element;
+    const dom = document.querySelector('body');
     if (!hasIndex(this.pathArr, url) && !(this.redirect[0].redirect === url)) {
       window.location.hash = this.redirect[0].redirect;
       return;
@@ -36,11 +38,10 @@ class Router {
       // element = currentRoute.template;
     }
     try {
-      currentRoute.component.call(this);
+      currentRoute.bind.call(this, dom);
     } catch (e) {
       console.log(e);
     }
-    currentRoute.component()
     // console.log('currentRoute==>>', currentRoute);
 
     // console.log('before routerArr', this.routerArr);
