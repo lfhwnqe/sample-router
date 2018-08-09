@@ -2,7 +2,6 @@ import Router from './routes/router';
 
 function bind() {
   const router = this;
-  router.render(`<div>加载中</div>`);
   getMsg().then(res => {
     let ele = '';
     res.list.map(k => {
@@ -10,6 +9,12 @@ function bind() {
     });
     router.render(`<ul>${ele}</ul>`);
   });
+  //TODO 事件绑定无法销毁，引起冲突，vue-router是如何解决（事件代理么）
+  // document.querySelector('body').addEventListener('click', e => {
+  //   if (e.target.tagName.toLowerCase() === 'li') {
+  //     console.log(e.target.innerText);
+  //   }
+  // });
 }
 
 function getMsg() {
@@ -47,13 +52,20 @@ const routerArr = [
     // beforeRender: function() {
     //   this.template = `<div>哈哈哈</div>`;
     // }
+    beforeBind: function() {
+      const router = this;
+      router.render(`<div>加载中</div>`);
+    },
     bind: bind
   },
   {
     path: '/list',
     name: 'list',
     title: '列表',
-    bind: () => {}
+    bind: function() {
+      const router = this;
+      router.render(`<ul><li>list1</li><li>list2</li></ul>`);
+    }
     // template: `<div>列表页</div>`,
     // beforeRender: () => {console.log('render list');}
   },
