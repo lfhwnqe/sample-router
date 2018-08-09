@@ -5,7 +5,8 @@ defaultRedirect = {
   render: () => {console.log('404 NOT FOUND');}
 };
 
-// todo 不支持子路由、无法异步请求数据渲染模版
+// TODO 实现异步请求数据渲染模版，渲染方法的设计及与外部传入配置component的结合
+// TODO 实现beforeEnter afterEnter beforeLeave afterLeave钩子
 class Router {
   constructor(routerArr) {
     this.url = spliceHash(location.href);
@@ -29,15 +30,28 @@ class Router {
     }
     if (hasIndex(this.pathArr, url)) {
       currentRoute = this.routerArr[(this.pathArr.indexOf(url))];
-      element = currentRoute.template;
+      // element = currentRoute.template;
     } else {
       currentRoute = this.redirect[0];
-      element = currentRoute.template;
+      // element = currentRoute.template;
     }
-    currentRoute.render && currentRoute.render();
-    if (element) {
-      this.render(element);
+    try {
+      currentRoute.component.call(this);
+    } catch (e) {
+      console.log(e);
     }
+    currentRoute.component()
+    // console.log('currentRoute==>>', currentRoute);
+
+    // console.log('before routerArr', this.routerArr);
+    // TODO 渲染和触发beforeRender的方法
+    // if (element) {
+    //   this.render(element);
+    // }
+    // if (currentRoute) {
+    //   currentRoute.beforeRender();
+    // }
+    // console.log('after routerArr', this.routerArr);
 
   }
 
@@ -75,7 +89,7 @@ function spliceHash(url) {
 }
 
 function hasIndex(arr, index) {
-  if (!Array.isArray(arr)) return;
+  if (!Array.isArray(arr)) return false;
   return arr.indexOf(index) >= 0;
 }
 

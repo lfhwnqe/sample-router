@@ -117,17 +117,23 @@ defaultRedirect = {
   }
 };
 
+// TODO 实现异步请求数据渲染模版，渲染方法的设计及与外部传入配置component的结合
+// TODO 实现beforeEnter afterEnter beforeLeave afterLeave钩子
+
 var Router = function () {
   function Router(routerArr) {
     _classCallCheck(this, Router);
 
+    this.url = spliceHash(location.href);
     this.routerArr = routerArr;
     this.pathArr = routerArr.map(function (k) {
       return k.path;
     });
     this.redirect = routerArr.filter(function (k) {
       return k.redirect;
-    });
+    }).length > 0 ? routerArr.filter(function (k) {
+      return k.redirect;
+    }) : [defaultRedirect];
     this.hashHistory = [];
     this.init();
   }
@@ -135,8 +141,7 @@ var Router = function () {
   _createClass(Router, [{
     key: 'init',
     value: function init() {
-      var url = spliceHash(location.href);
-      this.hashFn(url);
+      this.hashFn(this.url);
       this.bindEvent();
     }
   }, {
@@ -144,22 +149,39 @@ var Router = function () {
     value: function hashFn(url) {
       var currentRoute = void 0,
           element = void 0;
+      if (!hasIndex(this.pathArr, url) && !(this.redirect[0].redirect === url)) {
+        window.location.hash = this.redirect[0].redirect;
+        return;
+      }
       if (hasIndex(this.pathArr, url)) {
         currentRoute = this.routerArr[this.pathArr.indexOf(url)];
+        // element = currentRoute.template;
       } else {
-        // 重定向到默认
         currentRoute = this.redirect[0];
-        if (!currentRoute) {
-          currentRoute = defaultRedirect;
-        }
-        // todo 两次触发404 render的问题
-        window.location.hash = currentRoute.redirect;
+        // element = currentRoute.template;
       }
-      element = currentRoute.template;
-      // 渲染dom
+      try {
+        currentRoute.component.call(this);
+      } catch (e) {
+        console.log(e);
+      }
+      currentRoute.component();
+      // console.log('currentRoute==>>', currentRoute);
+
+      // console.log('before routerArr', this.routerArr);
+      // TODO 渲染和触发beforeRender的方法
+      // if (element) {
+      //   this.render(element);
+      // }
+      // if (currentRoute) {
+      //   currentRoute.beforeRender();
+      // }
+      // console.log('after routerArr', this.routerArr);
+    }
+  }, {
+    key: 'render',
+    value: function render(element) {
       document.querySelector('body').innerHTML = element;
-      // 触发render钩子
-      if (currentRoute.render) currentRoute.render();
     }
   }, {
     key: 'bindEvent',
@@ -169,23 +191,6 @@ var Router = function () {
       window.addEventListener('hashchange', function (e) {
         var url = spliceHash(e.newURL);
         _this.hashFn(url);
-        // let currentRoute, element;
-        // if (hasIndex(this.pathArr, url)) {
-        //   currentRoute = this.routerArr[(this.pathArr.indexOf(url))];
-        // } else {
-        //   // 重定向到默认
-        //   currentRoute = this.redirect[0];
-        //   if (!currentRoute) {
-        //     currentRoute = defaultRedirect;
-        //   }
-        //   // todo 两次触发404 render的问题
-        //   window.location.hash = currentRoute.redirect;
-        // }
-        // element = currentRoute.template;
-        // // 渲染dom
-        // document.querySelector('body').innerHTML = element;
-        // // 触发render钩子
-        // if (currentRoute.render) currentRoute.render();
       });
     }
 
@@ -207,13 +212,18 @@ var Router = function () {
 }();
 
 function spliceHash(url) {
+  var str = void 0;
   var hashIndex = url.indexOf('#');
-  var str = url.substr(hashIndex + 1);
+  if (hashIndex >= 0) {
+    str = url.substr(hashIndex + 1);
+  } else {
+    str = '/';
+  }
   return str;
 }
 
 function hasIndex(arr, index) {
-  if (!Array.isArray(arr)) return;
+  if (!Array.isArray(arr)) return false;
   return arr.indexOf(index) >= 0;
 }
 
@@ -231,18 +241,22 @@ var routerArr = [{
   path: '/',
   name: 'index',
   title: '主页',
-  template: '<div>\u4E3B\u9875</div>',
-  render: function render() {
-    console.log('render index');
-  }
+  // template: `<div>主页</div>`,
+  // beforeRender: function() {
+  //   this.template = `<div>哈哈哈</div>`;
+  // }
+  component: function component() {}
 }, {
   path: '/list',
   name: 'list',
-  title: '列表',
-  template: '<div>\u5217\u8868\u9875</div>',
-  render: function render() {
-    console.log('render list');
-  }
+  title: '列表'
+  // template: `<div>列表页</div>`,
+  // beforeRender: () => {console.log('render list');}
+}, {
+  redirect: '/504',
+  name: '504'
+  // template: `<div>504 not found</div>`,
+  // beforeRender: () => {console.log('504 NOT FOUND');}
 }];
 
 var router = new _router2.default(routerArr);
@@ -275,7 +289,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = '' || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + '52218' + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + '54664' + '/');
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 
